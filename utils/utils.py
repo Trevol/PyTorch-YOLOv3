@@ -1,14 +1,8 @@
 from __future__ import division
-import math
-import time
-import tqdm
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
+
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
+import torch
+import tqdm
 
 
 def to_cpu(tensor):
@@ -19,8 +13,8 @@ def load_classes(path):
     """
     Loads class labels at 'path'
     """
-    fp = open(path, "r")
-    names = fp.read().split("\n")[:-1]
+    with open(path, "r") as fp:
+        names = [row for row in fp.read().split("\n") if row]
     return names
 
 
@@ -265,8 +259,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
 
 def build_targets(pred_boxes, pred_cls, target, anchors, ignore_thres):
-
-    ByteTensor = torch.cuda.ByteTensor if pred_boxes.is_cuda else torch.ByteTensor
+    BoolTensor = torch.cuda.BoolTensor if pred_boxes.is_cuda else torch.BoolTensor
+    # ByteTensor = torch.cuda.ByteTensor if pred_boxes.is_cuda else torch.ByteTensor
     FloatTensor = torch.cuda.FloatTensor if pred_boxes.is_cuda else torch.FloatTensor
 
     nB = pred_boxes.size(0)
@@ -275,8 +269,8 @@ def build_targets(pred_boxes, pred_cls, target, anchors, ignore_thres):
     nG = pred_boxes.size(2)
 
     # Output tensors
-    obj_mask = ByteTensor(nB, nA, nG, nG).fill_(0)
-    noobj_mask = ByteTensor(nB, nA, nG, nG).fill_(1)
+    obj_mask = BoolTensor(nB, nA, nG, nG).fill_(0)
+    noobj_mask = BoolTensor(nB, nA, nG, nG).fill_(1)
     class_mask = FloatTensor(nB, nA, nG, nG).fill_(0)
     iou_scores = FloatTensor(nB, nA, nG, nG).fill_(0)
     tx = FloatTensor(nB, nA, nG, nG).fill_(0)

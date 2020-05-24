@@ -22,22 +22,6 @@ import matplotlib.patches as patches
 from matplotlib.ticker import NullLocator
 
 
-def args():
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("--image_folder", type=str, default="data/samples", help="path to dataset")
-    # parser.add_argument("--model_def", type=str, default="config/yolov3.cfg", help="path to model definition file")
-    # parser.add_argument("--weights_path", type=str, default="weights/yolov3.weights", help="path to weights file")
-    # parser.add_argument("--class_path", type=str, default="data/coco.names", help="path to class label file")
-    # parser.add_argument("--conf_thres", type=float, default=0.8, help="object confidence threshold")
-    # parser.add_argument("--nms_thres", type=float, default=0.4, help="iou thresshold for non-maximum suppression")
-    # parser.add_argument("--batch_size", type=int, default=1, help="size of the batches")
-    # parser.add_argument("--n_cpu", type=int, default=0, help="number of cpu threads to use during batch generation")
-    # parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension")
-    # parser.add_argument("--checkpoint_model", type=str, help="path to checkpoint model")
-    # opt = parser.parse_args()
-    pass
-
-
 class Options:
     image_folder = "./data/samples"  # path to dataset
     model_def = "config/yolov3.cfg"  # path to model definition file
@@ -54,12 +38,12 @@ class Options:
 
 def getYoloOptions(image_folder):
     opt = Options()
-    opt.image_folder = image_folder or "../data/samples"
-    opt.model_def = "../config/yolov3.cfg"
-    opt.weights_path = "../weights/yolov3.weights"
-    opt.class_path = "../data/coco.names"
+    opt.image_folder = image_folder or "./dataset/images"
+    opt.model_def = "yolov3.cfg"
+    opt.weights_path = "./checkpoints/yolov3_ckpt_11.pth"
+    opt.class_path = "./dataset/classes.names"
     opt.conf_thres = 0.8
-    opt.nms_thres = 0.4
+    opt.nms_thres = 0.3
     opt.batch_size = 1
     opt.n_cpu = 0
     opt.img_size = 416
@@ -148,12 +132,14 @@ def main():
             n_cls_preds = len(unique_labels)
             bbox_colors = random.sample(colors, n_cls_preds)
             for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
-                print("\t+ Label: %s, Conf: %.5f" % (classes[int(cls_pred)], cls_conf.item()))
+                class_pred = int(cls_pred)
+                className = classes[class_pred]
+                print("\t+ Label: %s, Conf: %.5f" % (className, cls_conf.item()))
 
                 box_w = x2 - x1
                 box_h = y2 - y1
 
-                color = bbox_colors[int(np.where(unique_labels == int(cls_pred))[0])]
+                color = bbox_colors[int(np.where(unique_labels == class_pred)[0])]
                 # Create a Rectangle patch
                 bbox = patches.Rectangle((x1, y1), box_w, box_h, linewidth=2, edgecolor=color, facecolor="none")
                 # Add the bbox to the plot
@@ -162,7 +148,7 @@ def main():
                 plt.text(
                     x1,
                     y1,
-                    s=classes[int(cls_pred)],
+                    s=className,
                     color="white",
                     verticalalignment="top",
                     bbox={"color": color, "pad": 0},
