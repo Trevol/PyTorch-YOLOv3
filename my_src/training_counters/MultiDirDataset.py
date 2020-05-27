@@ -19,10 +19,22 @@ class MultiDirDataset(Dataset):
     def __init__(self, dataDirs, img_size, augment=True, multiscale=True, normalized_labels=True):
         self.img_files = []
         self.label_files = []
+
         for dataDir in dataDirs:
-            self.img_files.extend(files(dataDir, '*.jpg'))
-            self.img_files.extend(files(dataDir, '*.jpeg'))
-            self.label_files.extend(files(dataDir, '*.txt'))
+            for labelFile in files(dataDir, '*.txt'):
+                imgFound = False
+                nameWithoutExt = os.path.splitext(labelFile)[0]
+                if os.path.isfile(nameWithoutExt + '.jpg'):
+                    self.img_files.append(nameWithoutExt + '.jpg')
+                    imgFound = True
+                elif os.path.isfile(nameWithoutExt + '.jpeg'):
+                    self.img_files.append(nameWithoutExt + '.jpeg')
+                    imgFound = True
+                elif os.path.isfile(nameWithoutExt + '.png'):
+                    self.img_files.append(nameWithoutExt + '.png')
+                    imgFound = True
+                if imgFound:
+                    self.label_files.append(labelFile)
 
         self.img_size = img_size
         self.max_objects = 100
