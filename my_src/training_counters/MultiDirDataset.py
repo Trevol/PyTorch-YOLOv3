@@ -10,76 +10,94 @@ import torchvision.transforms as transforms
 import cv2
 import numpy as np
 import torch
-from trvo_utils.imutils import imreadRGB
+from trvo_utils.annotation import PascalVocXmlParser, BBox
+from trvo_utils.imutils import imreadRGB, imSize
+from trvo_utils.iter_utils import unzip
 
 from utils.datasets import pad_to_square, resize
 
 
-def files(dir, pattern):
-    return glob(os.path.join(dir, pattern))
-
-
 def _composeTransforms(transforms):
-    bbox_params = BboxParams('yolo', ['class_ids'], min_visibility=.7)
+    bbox_params = BboxParams('pascal_voc', ['class_ids'], min_visibility=.5)
     return Compose(transforms or [], bbox_params)
 
 
-class MultiDirDataset(IterableDataset):
-    def __init__(self, dataDirs, img_size, transforms=[], multiscale=True, normalized_labels=True):
-        self.img_files = []
-        self.label_files = []
+class _Loader:
+    imgExts = ['.jpg', '.jpeg', '.png']
 
-        for dataDir in dataDirs:
-            for labelFile in files(dataDir, '*.txt'):
-                imgFound = False
+    def __init__(self, dataDirs, labelNames):
+        self.labelNames = labelNames
+        self.dataDirs = dataDirs
+
+    @staticmethod
+    def _files(dir, pattern):
+        return glob(os.path.join(dir, pattern))
+
+    def _annotatedImages(self):
+        for dataDir in self.dataDirs:
+            for labelFile in self._files(dataDir, '*.xml'):
                 nameWithoutExt = os.path.splitext(labelFile)[0]
-                if os.path.isfile(nameWithoutExt + '.jpg'):
-                    self.img_files.append(nameWithoutExt + '.jpg')
-                    imgFound = True
-                elif os.path.isfile(nameWithoutExt + '.jpeg'):
-                    self.img_files.append(nameWithoutExt + '.jpeg')
-                    imgFound = True
-                elif os.path.isfile(nameWithoutExt + '.png'):
-                    self.img_files.append(nameWithoutExt + '.png')
-                    imgFound = True
-                if imgFound:
-                    self.label_files.append(labelFile)
+                imgFile = next(
+                    (nameWithoutExt + imExt for imExt in self.imgExts if os.path.isfile(nameWithoutExt + imExt)),
+                    "")
+                if imgFile:
+                    yield imgFile, labelFile
 
-        assert len(self.label_files)
+    def _parseAnnotations(self, labelFile):
+        p = PascalVocXmlParser(labelFile)
+        class_ids = [self.labelNames.index(l) for l in p.labels()]
+        desiredAnnotations = ((b, l) for b, l in zip(p.boxes(), class_ids) if l != -1)
+        boxes, class_ids = unzip(desiredAnnotations, [], [])
+        return boxes, class_ids
+
+    def loadItems(self):
+        items = []
+        for imgFile, labelFile in self._annotatedImages():
+            img = imreadRGB(imgFile)
+            if len(img.shape) == 2:
+                img = np.dstack([img] * 3)
+            boxes, class_ids = self._parseAnnotations(labelFile)
+            item = imgFile, img, boxes, class_ids
+            items.append(item)
+        assert len(items)
+        return items
+
+
+class MultiDirDataset(IterableDataset):
+    def __init__(self, dataDirs, img_size, label_names, transforms=(), multiscale=True):
+        self.items = _Loader(dataDirs, label_names).loadItems()
         self.img_size = img_size
-        self.max_objects = 100
         self.transforms = _composeTransforms(transforms)
         self.multiscale = multiscale
-        self.normalized_labels = normalized_labels
         self.min_size = self.img_size - 3 * 32
         self.max_size = self.img_size + 3 * 32
         self.batch_count = 0
 
     def __iter__(self):
-        for i in cycle(range(len(self.img_files))):
+        for i in cycle(range(len(self.items))):
             yield self.getitem(i)
 
-    def getitem(self, index):
-        img_path = self.img_files[index]
-
-        # Extract image as PyTorch tensor
-        img = imreadRGB(img_path)
-        boxes = np.loadtxt(self.label_files[index]).reshape(-1, 5)
-        r = self.transforms(image=img, bboxes=boxes[:, 1:], class_ids=boxes[:, 0])
+    def _transformItem(self, index):
+        _, img, boxes, class_ids = self.items[index]
+        r = self.transforms(image=img, bboxes=boxes, class_ids=class_ids)
         img = r['image']
-        bb = r['bboxes']
-        class_ids = np.array(r['class_ids'])
-        boxes = np.hstack((class_ids.reshape(-1, 1), bb))
+        boxes = r['bboxes']
+        class_ids = r['class_ids']
+        assert len(boxes) == len(class_ids)
 
+        targets = np.empty([0, 5], np.float32)
+        if len(boxes):
+            boxes = BBox.voc2yolo_boxes(boxes, imSize(img))
+            targets = np.insert(boxes, 0, class_ids, 1)
+
+        return img, targets
+
+    def getitem(self, index):
+        img, boxes = self._transformItem(index)
         img = transforms.ToTensor()(img)
 
-        # Handle images with less than three channels
-        if len(img.shape) != 3:
-            img = img.unsqueeze(0)
-            img = img.expand((3, img.shape[1:]))
-
         _, h, w = img.shape
-        h_factor, w_factor = (h, w) if self.normalized_labels else (1, 1)
+        h_factor, w_factor = h, w
         # Pad to square resolution
         img, pad = pad_to_square(img, 0)
         _, padded_h, padded_w = img.shape
@@ -108,10 +126,10 @@ class MultiDirDataset(IterableDataset):
         targets = torch.zeros((len(boxes), 6))
         targets[:, 1:] = boxes
 
-        return img_path, img, targets
+        return img, targets
 
     def collate_fn(self, batch):
-        paths, imgs, targets = list(zip(*batch))
+        imgs, targets = list(zip(*batch))
         # Remove empty placeholder targets
         targets = [boxes for boxes in targets if boxes is not None]
         # Add sample index to targets
@@ -124,4 +142,4 @@ class MultiDirDataset(IterableDataset):
         # Resize images to input shape
         imgs = torch.stack([resize(img, self.img_size) for img in imgs])
         self.batch_count += 1
-        return paths, imgs, targets
+        return imgs, targets

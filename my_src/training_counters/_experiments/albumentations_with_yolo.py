@@ -8,7 +8,6 @@ from trvo_utils.annotation.bbox import BBox
 
 from my_src.training_counters import transforms
 
-
 def drawYoloBoxes(image, yoloBoxes, color=(0, 0, 200)):
     for cx_norm, cy_norm, w_norm, h_norm in yoloBoxes:
         x1, y1, x2, y2 = BBox.yolo2voc(cx_norm, cy_norm, w_norm, h_norm, imSize(image))

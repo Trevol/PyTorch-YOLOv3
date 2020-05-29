@@ -4,6 +4,8 @@ from my_src.training_counters import transforms
 from my_src.training_counters.MultiDirDataset import MultiDirDataset
 from torch.utils.data import DataLoader
 
+from utils.utils import load_classes
+
 
 def main():
     trainDataDirs = [
@@ -12,24 +14,21 @@ def main():
     ]
 
     batchSize = 7
-    dataset = MultiDirDataset(trainDataDirs, img_size=416, transforms=transforms.make(1),
-                              multiscale=True)
+    class_names = load_classes('../classes.names')
+    dataset = MultiDirDataset(trainDataDirs, 416, class_names, transforms=transforms.make(1),
+                              multiscale=False)
     dataloader = DataLoader(
         dataset,
-        batch_size=batchSize,
+        batch_size=1,
         shuffle=False,
         num_workers=0,
-        pin_memory=False,
+        pin_memory=True,
         collate_fn=dataset.collate_fn
     )
 
-    j = 0
-
-    for i, imgs, targets in islice(cycle(dataloader), 4):
-        print(j, len(imgs))
-        j += 1
-        if j > 300:
-            break
+    for imgs, targets in islice(cycle(dataloader), 40):
+        print(targets)
+        break
 
 
 main()
