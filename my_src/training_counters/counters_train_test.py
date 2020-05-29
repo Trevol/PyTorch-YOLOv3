@@ -20,9 +20,10 @@ import argparse
 import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets
-from torchvision import transforms
 from torch.autograd import Variable
 import torch.optim as optim
+
+from my_src.training_counters import transforms
 
 
 class TrainingOptions:
@@ -173,7 +174,7 @@ def train():
     model = opt.makeModel(device)
 
     # Get dataloader
-    dataset = MultiDirDataset(opt.trainDataDirs, img_size=opt.img_size, augment=True,
+    dataset = MultiDirDataset(opt.trainDataDirs, img_size=opt.img_size, transforms=transforms.make(1),
                               multiscale=opt.multiscale_training)
     dataloader = torch.utils.data.DataLoader(
         dataset,
