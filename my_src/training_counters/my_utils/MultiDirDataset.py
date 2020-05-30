@@ -63,29 +63,44 @@ class _Loader:
         return items
 
 
+_emptyTargets = np.empty([0, 5], np.float32)
+
+
 class MultiDirDataset(IterableDataset):
-    def __init__(self, dataDirs, img_size, label_names, transforms=(), multiscale=True):
+    def __init__(self, dataDirs, img_size, label_names, transforms=None, multiscale=True):
         self.items = _Loader(dataDirs, label_names).loadItems()
         self.img_size = img_size
-        self.transforms = _composeTransforms(transforms)
+
+        if transforms is None:
+            self.transforms = None
+            self.infinite = False
+        else:
+            self.transforms = _composeTransforms(transforms)
+            self.infinite = True
+
         self.multiscale = multiscale
         self.min_size = self.img_size - 3 * 32
         self.max_size = self.img_size + 3 * 32
         self.batch_count = 0
 
     def __iter__(self):
-        for i in cycle(range(len(self.items))):
-            yield self.getitem(i)
+        if self.infinite:
+            for i in cycle(range(len(self.items))):
+                yield self.getitem(i)
+        else:
+            for i in range(len(self.items)):
+                yield self.getitem(i)
 
     def _transformItem(self, index):
         _, img, boxes, class_ids = self.items[index]
-        r = self.transforms(image=img, bboxes=boxes, class_ids=class_ids)
-        img = r['image']
-        boxes = r['bboxes']
-        class_ids = r['class_ids']
-        assert len(boxes) == len(class_ids)
+        if self.transforms:
+            r = self.transforms(image=img, bboxes=boxes, class_ids=class_ids)
+            img = r['image']
+            boxes = r['bboxes']
+            class_ids = r['class_ids']
+            assert len(boxes) == len(class_ids)
 
-        targets = np.empty([0, 5], np.float32)
+        targets = _emptyTargets
         if len(boxes):
             boxes = BBox.voc2yolo_boxes(boxes, imSize(img))
             targets = np.insert(boxes, 0, class_ids, 1)
