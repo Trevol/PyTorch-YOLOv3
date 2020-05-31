@@ -40,9 +40,9 @@ def detect():
         pass
 
     opt = OPT()
-    opt.image_folder = './counters/6_from_phone/'
+    opt.image_folder = './counters/4_from_phone/'
     opt.model_def = "yolov3.cfg"
-    opt.weights_path = "./checkpoints/2/yolov3_ckpt_6.pth"
+    opt.weights_path = "./checkpoints/yolov3_ckpt_6_1.000.pth"
     opt.class_path = "classes.names"
     opt.conf_thres = 0.5
     opt.nms_thres = 0.5
@@ -66,8 +66,6 @@ def detect():
         shuffle=False,
         num_workers=opt.n_cpu,
     )
-
-    classes = load_classes(opt.class_path)  # Extracts class labels from file
 
     FloatTensor = torch.cuda.FloatTensor if deviceType == "cuda" else torch.FloatTensor
 

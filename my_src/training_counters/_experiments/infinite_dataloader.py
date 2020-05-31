@@ -16,7 +16,7 @@ def main():
     batchSize = 7
     class_names = load_classes('../classes.names')
     dataset = MultiDirDataset(trainDataDirs, 416, class_names,
-                              transforms= None, #transforms.make(1),
+                              transforms= transforms.make(1),
                               multiscale=False)
     dataloader = DataLoader(
         dataset,

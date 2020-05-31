@@ -58,7 +58,7 @@ class TrainingOptions:
         opt.multiscale_training = True
 
         opt.trainDataDirs = [
-            # "counters/1_from_phone/train",
+            "counters/1_from_phone/train",
             "counters/2_from_phone/train"
         ]
         opt.valDataDirs = [
@@ -138,8 +138,8 @@ def train():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     os.makedirs("checkpoints", exist_ok=True)
-    class_names = load_classes(opt.class_names)
-
+    # class_names = load_classes(opt.class_names)
+    class_names = ["counter_screen"]
     # Initiate model
     model = opt.makeModel(device)
 
