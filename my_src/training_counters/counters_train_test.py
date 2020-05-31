@@ -138,9 +138,8 @@ def train():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     os.makedirs("checkpoints", exist_ok=True)
-    # class_names = load_classes(opt.class_names)
-    class_names = ["counter_screen"]
-    # Initiate model
+    class_names = load_classes(opt.class_names)
+
     model = opt.makeModel(device)
 
     # Get dataloader
