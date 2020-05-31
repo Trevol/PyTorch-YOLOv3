@@ -10,8 +10,9 @@ import torchvision.transforms as transforms
 import cv2
 import numpy as np
 import torch
+from trvo_utils import toInt
 from trvo_utils.annotation import PascalVocXmlParser, BBox
-from trvo_utils.imutils import imreadRGB, imSize
+from trvo_utils.imutils import imreadRGB, imSize, imshowWait
 from trvo_utils.iter_utils import unzip
 
 from utils.datasets import pad_to_square, resize
@@ -26,6 +27,7 @@ class _Loader:
     imgExts = ['.jpg', '.jpeg', '.png']
 
     def __init__(self, dataDirs, labelNames):
+        assert len(labelNames)
         self.labelNames = labelNames
         self.dataDirs = dataDirs
 
@@ -93,6 +95,13 @@ class MultiDirDataset(IterableDataset):
 
     def _transformItem(self, index):
         _, img, boxes, class_ids = self.items[index]
+
+        # imgDebug = img.copy()
+        # for b in boxes:
+        #     x1, y1, x2, y2  =toInt(*b)
+        #     cv2.rectangle(imgDebug, (x1, y1), (x2, y2), (255, 255, 255), 2)
+        # imshowWait(cv2.resize(imgDebug, None, None, .5, .5))
+
         if self.transforms:
             r = self.transforms(image=img, bboxes=boxes, class_ids=class_ids)
             img = r['image']

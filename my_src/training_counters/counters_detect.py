@@ -1,15 +1,38 @@
 import time
-
+from glob import glob
+import os
 import cv2
 import torch
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
+from torch.utils.data.dataset import Dataset
+from torchvision.transforms import transforms
 from trvo_utils import toInt
-from trvo_utils.imutils import imSize, imshowWait
+from trvo_utils.imutils import imSize, imshowWait, imreadRGB
 
 from models import Darknet
-from utils.datasets import ImageFolder
+from utils.datasets import pad_to_square, resize
 from utils.utils import load_classes, non_max_suppression, rescale_boxes
+
+
+class ImageFolder2(Dataset):
+    def __init__(self, folder_path, img_size=416):
+        self.files = sorted(glob(os.path.join(folder_path, "*.jpg")))
+        self.img_size = img_size
+
+    def __getitem__(self, index):
+        img_path = self.files[index % len(self.files)]
+        # Extract image as PyTorch tensor
+        img = transforms.ToTensor()(imreadRGB(img_path))
+        # Pad to square resolution
+        img, _ = pad_to_square(img, 0)
+        # Resize
+        img = resize(img, self.img_size)
+
+        return img_path, img
+
+    def __len__(self):
+        return len(self.files)
 
 
 def detect():
@@ -17,12 +40,12 @@ def detect():
         pass
 
     opt = OPT()
-    opt.image_folder = './counters/Счетчики'
+    opt.image_folder = './counters/6_from_phone/'
     opt.model_def = "yolov3.cfg"
     opt.weights_path = "./checkpoints/2/yolov3_ckpt_6.pth"
     opt.class_path = "classes.names"
     opt.conf_thres = 0.5
-    opt.nms_thres = 0.3
+    opt.nms_thres = 0.5
     opt.batch_size = 1
     opt.n_cpu = 0
     opt.img_size = 416
@@ -38,7 +61,7 @@ def detect():
     model.eval()  # Set in evaluation mode
 
     dataloader = DataLoader(
-        ImageFolder(opt.image_folder, img_size=opt.img_size),
+        ImageFolder2(opt.image_folder, img_size=opt.img_size),
         batch_size=opt.batch_size,
         shuffle=False,
         num_workers=opt.n_cpu,
@@ -46,7 +69,7 @@ def detect():
 
     classes = load_classes(opt.class_path)  # Extracts class labels from file
 
-    Tensor = torch.cuda.FloatTensor if deviceType == "cuda" else torch.FloatTensor
+    FloatTensor = torch.cuda.FloatTensor if deviceType == "cuda" else torch.FloatTensor
 
     imgs = []  # Stores image paths
     img_detections = []  # Stores detections for each image index
@@ -56,7 +79,7 @@ def detect():
     for img_paths, input_imgs in dataloader:
         prev_time = time.time()
         # Configure input
-        input_imgs = Variable(input_imgs.type(Tensor))
+        input_imgs = Variable(input_imgs.type(FloatTensor))
 
         # Get detections
         with torch.no_grad():

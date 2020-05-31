@@ -19,14 +19,15 @@ class ModelEvaluator:
         self.img_size = img_size
         self.dataDirs = dataDirs
         self.model = model
+        self.dataset = MultiDirDataset(dataDirs, img_size, class_names, transforms=None, multiscale=False)
+        self.dataloader = DataLoader(
+            self.dataset, batch_size=batch_size, shuffle=False, num_workers=1,
+            collate_fn=self.dataset.collate_fn
+        )
 
     @staticmethod
-    def _evaluate(model, dataDirs, class_names, iou_thres, conf_thres, nms_thres, img_size, batch_size):
+    def _evaluate(model, dataloader, iou_thres, conf_thres, nms_thres, img_size):
         model.eval()
-        dataset = MultiDirDataset(dataDirs, img_size, class_names, transforms=None, multiscale=False)
-        dataloader = DataLoader(
-            dataset, batch_size=batch_size, shuffle=False, num_workers=1, collate_fn=dataset.collate_fn
-        )
 
         labels = []
         sample_metrics = []  # List of tuples (TP, confs, pred)
@@ -55,13 +56,11 @@ class ModelEvaluator:
         # Evaluate the model on the validation set
         precision, recall, AP, f1, ap_class = self._evaluate(
             self.model,
-            dataDirs=self.dataDirs,
-            class_names=self.class_names,
+            dataloader=self.dataloader,
             iou_thres=0.5,
             conf_thres=0.5,
             nms_thres=0.5,
-            img_size=self.img_size,
-            batch_size=self.batch_size,
+            img_size=self.img_size
         )
         meanAP = AP.mean()
         evaluation_metrics = [

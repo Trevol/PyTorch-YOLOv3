@@ -1,7 +1,7 @@
 from itertools import repeat, chain, cycle, islice
 
 from my_src.training_counters import transforms
-from my_src.training_counters.MultiDirDataset import MultiDirDataset
+from my_src.training_counters.my_utils.MultiDirDataset import MultiDirDataset
 from torch.utils.data import DataLoader
 
 from utils.utils import load_classes
@@ -9,13 +9,14 @@ from utils.utils import load_classes
 
 def main():
     trainDataDirs = [
-        "../counters/1_from_phone/train",
+        # "../counters/1_from_phone/train",
         "../counters/2_from_phone/train"
     ]
 
     batchSize = 7
     class_names = load_classes('../classes.names')
-    dataset = MultiDirDataset(trainDataDirs, 416, class_names, transforms=transforms.make(1),
+    dataset = MultiDirDataset(trainDataDirs, 416, class_names,
+                              transforms= None, #transforms.make(1),
                               multiscale=False)
     dataloader = DataLoader(
         dataset,
@@ -26,9 +27,9 @@ def main():
         collate_fn=dataset.collate_fn
     )
 
-    for imgs, targets in islice(cycle(dataloader), 40):
+    for imgs, targets in islice(dataloader, 100):
         print(targets)
-        break
+
 
 
 main()

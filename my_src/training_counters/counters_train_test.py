@@ -58,7 +58,7 @@ class TrainingOptions:
         opt.multiscale_training = True
 
         opt.trainDataDirs = [
-            "counters/1_from_phone/train",
+            # "counters/1_from_phone/train",
             "counters/2_from_phone/train"
         ]
         opt.valDataDirs = [
