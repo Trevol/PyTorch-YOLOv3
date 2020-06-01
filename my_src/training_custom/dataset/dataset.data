@@ -1,4 +1,0 @@
-classes= 1
-train=dataset/train.txt
-valid=dataset/valid.txt
-names=dataset/classes.names

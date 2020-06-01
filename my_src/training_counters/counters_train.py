@@ -5,7 +5,7 @@ from itertools import islice
 
 from tqdm import tqdm
 
-from models import *
+from models import Darknet
 from my_src.training_counters.my_utils.MultiDirDataset import MultiDirDataset
 from my_src.training_counters.my_utils.ModelEvaluator import ModelEvaluator
 from utils.utils import *
@@ -19,7 +19,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 
-from my_src.training_counters import transforms
+from my_src.training_counters.my_utils import transforms
 
 
 class TrainingOptions:

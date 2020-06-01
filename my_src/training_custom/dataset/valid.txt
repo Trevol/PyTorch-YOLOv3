@@ -1,9 +1,0 @@
-dataset/images/train.jpg
-dataset/images/train2.jpg
-dataset/images/train3.jpg
-dataset/images/train4.jpg
-dataset/images/train5.jpg
-dataset/images/train6.jpg
-dataset/images/train7.jpg
-dataset/images/train8.jpg
-dataset/images/train9.jpg
