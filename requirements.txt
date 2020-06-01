@@ -1,9 +1,12 @@
 numpy
+opencv-python
 torch>=1.0
 torchvision
-matplotlib
-tensorflow
-tensorboard
 terminaltables
 pillow
 tqdm
+trvo_utils
+
+#matplotlib
+#tensorflow
+#tensorboard
