@@ -1,4 +1,13 @@
-1) custom training on sample data (train)
+- configure gpu-server for training
+   - install smb and share drives
+   - write script to pull sources and start training
+- annotate "Счетчики" and train using new data
+- analyze screen in dataset using (https://towardsdatascience.com/9191d5c30d45) and sauvola_binarization
+   - https://towardsdatascience.com/image-enhancement-techniques-using-opencv-and-python-9191d5c30d45
+- port NumberGenerator and train NumberDetector
+
+
+
 2) inference with opencv (intel ONNX????)
     - pretrained weights: yolov3.weights
     - trained weights on stage 1
@@ -6,9 +15,10 @@
 3) train on counters/digits datasets
 !!!! https://github.com/Trevol/yolov3
 OpenCV and YOLO
+- google "pytorch onnx"
 - https://stackoverflow.com/questions/59150350/how-to-change-yolov3-custom-trained-pth-file-to-darknet-format-or-caffemodel
 - google "pytorch pth to yolo weights"
 - https://www.gitmemory.com/issue/AlexeyAB/darknet/3851/527293698
 - https://github.com/AlexeyAB/darknet#yolo-v3-in-other-frameworks
 - https://github.com/opencv/opencv/blob/8c25a8eb7b10fb50cda323ee6bec68aa1a9ce43c/samples/dnn/object_detection.py#L129-L150
-https://github.com/ultralytics/yolov3#darknet-conversion
+- https://github.com/ultralytics/yolov3#darknet-conversion
