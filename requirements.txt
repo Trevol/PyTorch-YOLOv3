@@ -5,6 +5,7 @@ torchvision
 terminaltables
 pillow
 tqdm
+albumentations
 https://github.com/Trevol/trvo_utils/archive/master.zip
 
 #matplotlib
