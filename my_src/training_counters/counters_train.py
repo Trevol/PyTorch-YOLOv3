@@ -47,9 +47,9 @@ class TrainingOptions:
         opt.stepsPerEpoch = 1000
         opt.batch_size = 6
         opt.gradient_accumulations = 2
-        opt.model_def = "yolov3.cfg"
-        opt.class_names = "classes.names"
-        opt.pretrained_weights = "./weights/yolov3.weights"  # "./checkpoints/2/yolov3_ckpt_6.pth"
+        opt.model_def = "./data/yolov3.cfg"
+        opt.class_names = "./data/classes.names"
+        opt.pretrained_weights = "./data/weights/yolov3.weights"  # "./data/checkpoints/2/yolov3_ckpt_6.pth"
         opt.n_cpu = 8
         opt.img_size = 416
         opt.checkpoint_interval = 1
@@ -58,12 +58,12 @@ class TrainingOptions:
         opt.multiscale_training = True
 
         opt.trainDataDirs = [
-            "counters/1_from_phone/train",
-            "counters/2_from_phone/train"
+            "./data/counters/1_from_phone/train",
+            "./data/counters/2_from_phone/train"
         ]
         opt.valDataDirs = [
-            "counters/1_from_phone/val",
-            "counters/2_from_phone/val"
+            "./data/counters/1_from_phone/val",
+            "./data/counters/2_from_phone/val"
         ]
         return opt
 
@@ -137,7 +137,7 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    os.makedirs("checkpoints", exist_ok=True)
+    os.makedirs("./data/checkpoints", exist_ok=True)
     class_names = load_classes(opt.class_names)
 
     model = opt.makeModel(device)
@@ -191,7 +191,7 @@ def train():
             meanAP = evaluator.evaluateModel(epoch)
 
         if epoch % opt.checkpoint_interval == 0:
-            torch.save(model.state_dict(), f"checkpoints/yolov3_ckpt_{epoch}_{meanAP:.3f}.pth")
+            torch.save(model.state_dict(), f"./data/checkpoints/yolov3_ckpt_{epoch}_{meanAP:.3f}.pth")
 
 
 train()

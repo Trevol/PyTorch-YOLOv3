@@ -10,18 +10,17 @@ from my_src.YoloDetector import YoloDetector
 
 def detect():
     class opt:
-        image_folder = './counters/4_from_phone/'
-        model_def = "yolov3.cfg"
-        # weights = "./checkpoints/yolov3_ckpt_6_1.000.pth"
-        weights = "./checkpoints/2/yolov3_ckpt_6.pth"
-        class_path = "classes.names"
+        model_def = "./data/yolov3.cfg"
+        # weights = "./data/checkpoints/yolov3_ckpt_6_1.000.pth"
+        weights = "./data/checkpoints/2/yolov3_ckpt_6.pth"
+        class_path = "./data/classes.names"
         conf_thres = 0.5
         nms_thres = 0.5
         img_size = 416
 
     detector = YoloDetector(opt.model_def, "cuda", opt.img_size, opt.weights, opt.conf_thres, opt.nms_thres)
 
-    img_files = sorted(glob('./counters/4_from_phone/*.jpg'))
+    img_files = sorted(glob('./data/counters/4_from_phone/*.jpg'))
     colors = [(0, 0, 200), (200, 0, 0)]
     for img_file in img_files:
         img = imreadRGB(img_file)
