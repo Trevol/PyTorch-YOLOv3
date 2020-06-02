@@ -30,6 +30,7 @@ class TrainingOptions:
     model_def = "config/yolov3.cfg"  # path to model definition file
     class_names = "classes.names"
     pretrained_weights = ""  # if specified starts from checkpoint model
+    checkpoints_path = ""
     n_cpu = 8  # number of cpu threads to use during batch generation
     img_size = 416  # size of each image dimension
     checkpoint_interval = 1  # interval between saving model weights
@@ -50,6 +51,7 @@ class TrainingOptions:
         opt.model_def = "./data/yolov3.cfg"
         opt.class_names = "./data/classes.names"
         opt.pretrained_weights = "./data/weights/yolov3.weights"  # "./data/checkpoints/2/yolov3_ckpt_6.pth"
+        opt.checkpoints_path = "./data/checkpoints"
         opt.n_cpu = 8
         opt.img_size = 416
         opt.checkpoint_interval = 1
@@ -137,7 +139,7 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    os.makedirs("./data/checkpoints", exist_ok=True)
+    # os.makedirs(opt.checkpoints_path, exist_ok=True)
     class_names = load_classes(opt.class_names)
 
     model = opt.makeModel(device)
@@ -159,7 +161,7 @@ def train():
 
     metrics = Metrics()
     evaluator = ModelEvaluator(model, opt.valDataDirs, opt.img_size, class_names, opt.batch_size,
-                               saveToFile="checkpoints/yolov3_ckpt_{epoch}_eval.txt")
+                               saveToFile=os.path.join(opt.checkpoints_path, "yolov3_ckpt_{epoch}_eval.txt"))
     nBatches = 0
     for epoch in range(opt.epochs):
         model.train()
@@ -191,7 +193,8 @@ def train():
             meanAP = evaluator.evaluateModel(epoch)
 
         if epoch % opt.checkpoint_interval == 0:
-            torch.save(model.state_dict(), f"./data/checkpoints/yolov3_ckpt_{epoch}_{meanAP:.3f}.pth")
+            checkpointPath = os.path.join(opt.checkpoints_path, f"yolov3_ckpt_{epoch}_{meanAP:.3f}.pth")
+            torch.save(model.state_dict(), checkpointPath)
 
 
 train()
