@@ -5,7 +5,7 @@ torchvision
 terminaltables
 pillow
 tqdm
-trvo_utils
+https://github.com/Trevol/trvo_utils/archive/master.zip
 
 #matplotlib
 #tensorflow
