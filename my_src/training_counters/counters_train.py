@@ -26,6 +26,7 @@ class TrainingOptions:
     epochs = 100  # number of epochs
     stepsPerEpoch = 1000
     batch_size = 8  # size of each image batch
+    lr = 1e-4
     gradient_accumulations = 2  # number of gradient accums before step
     model_def = "config/yolov3.cfg"  # path to model definition file
     class_names = "classes.names"
@@ -46,11 +47,14 @@ class TrainingOptions:
 
         opt.epochs = 20
         opt.stepsPerEpoch = 1000
-        opt.batch_size = 6
+        opt.batch_size = 8
+        opt.lr = 1e-5
         opt.gradient_accumulations = 2
         opt.model_def = "./data/yolov3.cfg"
         opt.class_names = "./data/classes.names"
-        opt.pretrained_weights = "./data/weights/yolov3.weights"  # "./data/checkpoints/2/yolov3_ckpt_6.pth"
+        # opt.pretrained_weights = "./data/weights/yolov3.weights"
+        opt.pretrained_weights = "./data/checkpoints/yolov3_ckpt_12_1.000.pth"
+
         opt.checkpoints_path = "./data/checkpoints"
         opt.n_cpu = 8
         opt.img_size = 416
@@ -159,7 +163,7 @@ def train():
         collate_fn=dataset.collate_fn
     )
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
 
     metrics = Metrics()
     evaluator = ModelEvaluator(model, opt.valDataDirs, opt.img_size, class_names, opt.batch_size,
