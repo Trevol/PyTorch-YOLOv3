@@ -61,11 +61,13 @@ class TrainingOptions:
 
         opt.trainDataDirs = [
             "./data/counters/1_from_phone/train",
-            "./data/counters/2_from_phone/train"
+            "./data/counters/2_from_phone/train",
+            "./data/counters/Musson_counters/train"
         ]
         opt.valDataDirs = [
             "./data/counters/1_from_phone/val",
-            "./data/counters/2_from_phone/val"
+            "./data/counters/2_from_phone/val",
+            "./data/counters/Musson_counters/val"
         ]
         return opt
 

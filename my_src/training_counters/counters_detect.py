@@ -17,10 +17,11 @@ def detect():
         conf_thres = 0.5
         nms_thres = 0.5
         img_size = 416
+        images = './data/counters/Musson_counters/train/*.jpg'  # './data/counters/4_from_phone/*.jpg'
 
     detector = YoloDetector(opt.model_def, "cuda", opt.img_size, opt.weights, opt.conf_thres, opt.nms_thres)
 
-    img_files = sorted(glob('./data/counters/4_from_phone/*.jpg'))
+    img_files = sorted(glob(opt.images))
     colors = [(0, 0, 200), (200, 0, 0)]
     for img_file in img_files:
         img = imreadRGB(img_file)
