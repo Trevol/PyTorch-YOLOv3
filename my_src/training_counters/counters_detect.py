@@ -18,15 +18,16 @@ def detect():
     class opt:
         model_def = "./data/yolov3.cfg"
         # weights = "./data/checkpoints/yolov3_ckpt_6_1.000.pth"
-        weights = "./data/checkpoints/gpu_server/1/yolov3_ckpt_3_1.000.pth"
+        weights = "./data/checkpoints/gpu_server/1/yolov3_ckpt_0_1.000.pth"
         class_path = "./data/classes.names"
         conf_thres = 0.8
         nms_thres = 0.5
         img_size = 416
         image_dirs = [
-            # './data/counters/Musson_counters/val/*.jpg',
-            # './data/counters/4_from_phone/*.jpg',
+            './data/counters/Musson_counters/val/*.jpg',
+            './data/counters/4_from_phone/*.jpg',
             './data/counters/3_from_phone/*.jpg',
+            './data/counters/1_from_phone/val/*.jpg'
         ]
 
     detector = YoloDetector(opt.model_def, "cuda", opt.img_size, opt.weights, opt.conf_thres, opt.nms_thres)
