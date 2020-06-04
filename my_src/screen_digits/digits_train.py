@@ -54,7 +54,7 @@ class TrainingOptions:
         opt.model_def = "./data/yolov3.cfg"
         opt.class_names = "./data/classes.names"
         # opt.pretrained_weights = "./data/weights/yolov3.weights"
-        opt.pretrained_weights = "./data/checkpoints/yolov3_ckpt_1_0.615.pth"
+        opt.pretrained_weights = "./data/checkpoints/1/yolov3_ckpt_1_0.615.pth"
         opt.checkpoints_path = "./data/checkpoints"
         opt.n_cpu = 8
         opt.img_size = 416
