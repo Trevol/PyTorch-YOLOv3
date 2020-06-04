@@ -5,25 +5,19 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from my_src.training_counters.my_utils.MultiDirDataset import MultiDirDataset
 from utils.utils import xywh2xyxy, non_max_suppression, get_batch_statistics, ap_per_class
 
 
 class ModelEvaluator:
     FloatTensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 
-    def __init__(self, model, dataDirs, img_size, class_names, batch_size, saveToFile):
+    def __init__(self, model, dataloader, img_size, class_names, batch_size, saveToFile):
         self.saveToFile = saveToFile
         self.batch_size = batch_size
         self.class_names = class_names
         self.img_size = img_size
-        self.dataDirs = dataDirs
         self.model = model
-        self.dataset = MultiDirDataset(dataDirs, img_size, class_names, transforms=None, multiscale=False)
-        self.dataloader = DataLoader(
-            self.dataset, batch_size=batch_size, shuffle=False, num_workers=1,
-            collate_fn=self.dataset.collate_fn
-        )
+        self.dataloader = dataloader
 
     @staticmethod
     def _evaluate(model, dataloader, iou_thres, conf_thres, nms_thres, img_size):

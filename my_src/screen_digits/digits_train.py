@@ -6,8 +6,9 @@ from itertools import islice
 from tqdm import tqdm
 
 from models import Darknet
-from my_src.training_counters.my_utils.MultiDirDataset import MultiDirDataset
-from my_src.training_counters.my_utils.ModelEvaluator import ModelEvaluator
+from my_src.screen_digits.SyntheticNumberDataset import SyntheticNumberDataset
+from my_src.utils.ModelEvaluator import ModelEvaluator
+from my_src.utils.ModelMetrics import ModelMetrics
 from utils.utils import *
 from utils.datasets import *
 
@@ -19,7 +20,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 
-from my_src.training_counters.my_utils import transforms
+from my_src.utils import transforms
 
 
 class TrainingOptions:
@@ -38,8 +39,8 @@ class TrainingOptions:
     evaluation_interval = 1  # interval evaluations on validation set
     compute_map = False  # if True computes mAP every tenth batch
     multiscale_training = True  # allow for multi-scale training
-    trainDataDirs = []
-    valDataDirs = []
+    digits_dir = ""
+    validationSteps = 100
 
     @classmethod
     def make(cls):
@@ -48,13 +49,11 @@ class TrainingOptions:
         opt.epochs = 20
         opt.stepsPerEpoch = 1000
         opt.batch_size = 8
-        opt.lr = 1e-5
+        opt.lr = 1e-3
         opt.gradient_accumulations = 2
         opt.model_def = "./data/yolov3.cfg"
         opt.class_names = "./data/classes.names"
-        # opt.pretrained_weights = "./data/weights/yolov3.weights"
-        opt.pretrained_weights = "./data/checkpoints/yolov3_ckpt_12_1.000.pth"
-
+        opt.pretrained_weights = "./data/weights/yolov3.weights"
         opt.checkpoints_path = "./data/checkpoints"
         opt.n_cpu = 8
         opt.img_size = 416
@@ -62,17 +61,8 @@ class TrainingOptions:
         opt.evaluation_interval = 1
         opt.compute_map = False
         opt.multiscale_training = True
-
-        opt.trainDataDirs = [
-            "./data/counters/1_from_phone/train",
-            "./data/counters/2_from_phone/train",
-            "./data/counters/Musson_counters/train"
-        ]
-        opt.valDataDirs = [
-            "./data/counters/1_from_phone/val",
-            "./data/counters/2_from_phone/val",
-            "./data/counters/Musson_counters/val"
-        ]
+        opt.digits_dir = 'data/28x28'
+        opt.validationSteps = 100
         return opt
 
     def makeModel(self, bindToDevice):
@@ -89,71 +79,19 @@ class TrainingOptions:
         return model
 
 
-class Metrics:
-    # logger = Logger("logs")
-    metrics = [
-        "grid_size",
-        "loss",
-        "x",
-        "y",
-        "w",
-        "h",
-        "conf",
-        "cls",
-        "cls_acc",
-        "recall50",
-        "recall75",
-        "precision",
-        "conf_obj",
-        "conf_noobj",
-    ]
-
-    def log(self, model, epoch, epochs, batch_i, len_dataloader, loss):
-        # ----------------
-        #   Log progress
-        # ----------------
-
-        log_str = "\n---- [Epoch %d/%d, Batch %d/%d] ----\n" % (epoch, epochs, batch_i, len_dataloader)
-
-        metric_table = [["Metrics", *[f"YOLO Layer {i}" for i in range(len(model.yolo_layers))]]]
-
-        # Log metrics at each YOLO layer
-        for i, metric in enumerate(self.metrics):
-            formats = {m: "%.6f" for m in self.metrics}
-            formats["grid_size"] = "%2d"
-            formats["cls_acc"] = "%.2f%%"
-            row_metrics = [formats[metric] % yolo.metrics.get(metric, 0) for yolo in model.yolo_layers]
-            metric_table += [[metric, *row_metrics]]
-
-            # Tensorboard logging
-            tensorboard_log = []
-            for j, yolo in enumerate(model.yolo_layers):
-                for name, metric in yolo.metrics.items():
-                    if name != "grid_size":
-                        tensorboard_log += [(f"{name}_{j + 1}", metric)]
-            tensorboard_log += [("loss", loss.item())]
-            # logger.list_of_scalars_summary(tensorboard_log, batches_done)
-
-        log_str += AsciiTable(metric_table).table
-        log_str += f"\nTotal loss {loss.item()}"
-
-        print(log_str)
-
-
 def train():
     opt = TrainingOptions.make()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # os.makedirs(opt.checkpoints_path, exist_ok=True)
-    class_names = load_classes(opt.class_names)
 
     model = opt.makeModel(device)
 
     # Get dataloader
-    dataset = MultiDirDataset(opt.trainDataDirs, img_size=opt.img_size, label_names=class_names,
-                              transforms=transforms.make(1),
-                              multiscale=opt.multiscale_training)
+    dataset = SyntheticNumberDataset(None, opt.digits_dir, img_size=opt.img_size,
+                                     transforms=transforms.make(1),
+                                     multiscale=opt.multiscale_training)
     dataloader = DataLoader(
         dataset,
         batch_size=opt.batch_size,
@@ -165,8 +103,17 @@ def train():
 
     optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
 
-    metrics = Metrics()
-    evaluator = ModelEvaluator(model, opt.valDataDirs, opt.img_size, class_names, opt.batch_size,
+    metrics = ModelMetrics()
+
+    evalDataset = SyntheticNumberDataset(opt.validationSteps, opt.digits_dir, img_size=opt.img_size,
+                                         transforms=transforms.make(1),
+                                         multiscale=False)
+    evalDataloader = DataLoader(
+        evalDataset, batch_size=opt.batch_size, shuffle=False, num_workers=1,
+        collate_fn=evalDataset.collate_fn
+    )
+
+    evaluator = ModelEvaluator(model, evalDataloader, opt.img_size, evalDataset.class_names, opt.batch_size,
                                saveToFile=os.path.join(opt.checkpoints_path, "yolov3_ckpt_{epoch}_eval.txt"))
     nBatches = 0
     for epoch in range(opt.epochs):
