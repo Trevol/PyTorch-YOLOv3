@@ -49,11 +49,12 @@ class TrainingOptions:
         opt.epochs = 20
         opt.stepsPerEpoch = 1000
         opt.batch_size = 8
-        opt.lr = 1e-3
+        opt.lr = 1e-4
         opt.gradient_accumulations = 2
         opt.model_def = "./data/yolov3.cfg"
         opt.class_names = "./data/classes.names"
-        opt.pretrained_weights = "./data/weights/yolov3.weights"
+        # opt.pretrained_weights = "./data/weights/yolov3.weights"
+        opt.pretrained_weights = "./data/checkpoints/yolov3_ckpt_1_0.615.pth"
         opt.checkpoints_path = "./data/checkpoints"
         opt.n_cpu = 8
         opt.img_size = 416
@@ -62,7 +63,7 @@ class TrainingOptions:
         opt.compute_map = False
         opt.multiscale_training = True
         opt.digits_dir = 'data/28x28'
-        opt.validationSteps = 100
+        opt.validationSteps = 800
         return opt
 
     def makeModel(self, bindToDevice):
