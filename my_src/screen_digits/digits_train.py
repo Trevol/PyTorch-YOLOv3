@@ -49,13 +49,13 @@ class TrainingOptions:
         opt.epochs = 20
         opt.stepsPerEpoch = 1000
         opt.batch_size = 8
-        opt.lr = 1e-4
+        opt.lr = 1e-5
         opt.gradient_accumulations = 2
         opt.model_def = "./data/yolov3.cfg"
         opt.class_names = "./data/classes.names"
         # opt.pretrained_weights = "./data/weights/yolov3.weights"
-        opt.pretrained_weights = "./data/checkpoints/1/yolov3_ckpt_1_0.615.pth"
-        opt.checkpoints_path = "./data/checkpoints"
+        opt.pretrained_weights = "./data/checkpoints/2/yolov3_ckpt_2_0.532.pth"
+        opt.checkpoints_path = "./data/checkpoints/3"
         opt.n_cpu = 8
         opt.img_size = 416
         opt.checkpoint_interval = 1
@@ -85,7 +85,7 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # os.makedirs(opt.checkpoints_path, exist_ok=True)
+    os.makedirs(opt.checkpoints_path, exist_ok=True)
 
     model = opt.makeModel(device)
 
