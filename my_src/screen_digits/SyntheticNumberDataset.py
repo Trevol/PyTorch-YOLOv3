@@ -27,8 +27,8 @@ class SyntheticNumberDataset(IterableDataset):
         bbox_params = BboxParams('pascal_voc', ['class_ids'], min_visibility=.5)
         return Compose(transforms or [], bbox_params)
 
-    def __init__(self, numOfItems, dataDirs, img_size, transforms=None, multiscale=True):
-        self._digits = Digits(dataDirs)
+    def __init__(self, numOfItems, dataset_dir, img_size, transforms=None, multiscale=True):
+        self._digits = Digits(dataset_dir)
         self.numOfItems = numOfItems
         self.img_size = img_size
 
@@ -63,13 +63,16 @@ class SyntheticNumberDataset(IterableDataset):
 
         return image, targets, vocBoxes, class_ids
 
-    def getItem(self):
+    def getItem(self, originalValues=False):
         numOfDigits = rnd0(self.maxNumberOfDigits)
         padding = rnd1(self.hPad), rnd1(self.vPad), rnd0(self.middlePad)
 
         numberImage, vocBoxes, class_ids = self._digits.randomNumber(numOfDigits, padding)
 
         numberImage, targets, vocBoxes, class_ids = self._transformItem(numberImage, vocBoxes, class_ids)
+        if originalValues:
+            return numberImage, vocBoxes, class_ids
+
         imageTensor, targetsTensor = to_yolo_input(numberImage, targets)
         return imageTensor, targetsTensor
 
