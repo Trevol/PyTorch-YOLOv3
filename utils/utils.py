@@ -227,7 +227,7 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
 
     # From (center x, center y, width, height) to (x1, y1, x2, y2)
     prediction[..., :4] = xywh2xyxy(prediction[..., :4])
-    output = [None for _ in range(len(prediction))]
+    output = [torch.empty([0, 7]) for _ in range(len(prediction))]
     for image_i, image_pred in enumerate(prediction):
         # Filter out confidence scores below threshold
         image_pred = image_pred[image_pred[:, 4] >= conf_thres]
@@ -253,7 +253,8 @@ def non_max_suppression(prediction, conf_thres=0.5, nms_thres=0.4):
             keep_boxes += [detections[0]]
             detections = detections[~invalid]
         if keep_boxes:
-            output[image_i] = torch.stack(keep_boxes)
+            imgDetections = torch.stack(keep_boxes)
+            output[image_i] = imgDetections[imgDetections[:, 5] >= conf_thres]
 
     return output
 

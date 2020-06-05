@@ -18,10 +18,10 @@ class opt:
     img_size = 416
     image_dirs = [
         # './data/counters/0_from_internet/all/*.jpg',
-        './data/counters/Musson_counters/val/*.jpg',
-        './data/counters/Musson_counters/train/*.jpg',
+        # './data/counters/Musson_counters/val/*.jpg',
+        # './data/counters/Musson_counters/train/*.jpg',
 
-        # './data/counters/4_from_phone/*.jpg',
+        './data/counters/4_from_phone/*.jpg',
         # './data/counters/3_from_phone/*.jpg',
         # './data/counters/1_from_phone/val/*.jpg'
     ]
@@ -67,5 +67,5 @@ def detect_and_save_screen():
 
 
 if __name__ == '__main__':
-    # detect_and_save_screen()
-    detect()
+    detect_and_save_screen()
+    # detect()

@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from torch.autograd import Variable
 from torchvision.transforms import transforms
 from trvo_utils.imutils import imSize
@@ -22,6 +23,8 @@ class YoloDetector:
         self.defaultConfThreshold = defaultConfThreshold
 
     def _preprocess(self, img):
+        if len(img.shape) == 2:
+            img = np.dstack([img, img, img])
         imgTensor = self.toTensor(img)
         imgTensor, _ = pad_to_square(imgTensor, 0)
         imgTensor = resize(imgTensor, self.model.img_size)
@@ -46,9 +49,10 @@ class YoloDetector:
         detections = non_max_suppression(detections, confThreshold, nmsThreshold)
 
         detections = [
-            rescale_boxes(imgDetections, self.model.img_size, imSize(img)) if imgDetections is not None else []
+            rescale_boxes(imgDetections, self.model.img_size, imSize(img))
             for imgDetections, img
             in zip(detections, imgs)
+            # if imgDetections[6] >= confThreshold  # cls_pred>=confThreshold
         ]
         # x1, y1, x2, y2, conf, cls_conf, cls_pred
         return detections

@@ -14,6 +14,10 @@ from trvo_utils.random import rnd0, rnd1
 
 from utils.datasets import resize, to_yolo_input
 
+excludeFonts = {
+    0: ["AndaleMono", "Ayuthaya", "Krungthep", "Silom"]
+}
+
 
 class SyntheticNumberDataset(IterableDataset):
     class_names = [str(n) for n in range(10)]
@@ -27,8 +31,9 @@ class SyntheticNumberDataset(IterableDataset):
         bbox_params = BboxParams('pascal_voc', ['class_ids'], min_visibility=.5)
         return Compose(transforms or [], bbox_params)
 
-    def __init__(self, numOfItems, dataset_dir, img_size, transforms=None, multiscale=True):
-        self._digits = Digits(dataset_dir)
+    def __init__(self, dataset_dir, img_size, numOfItems=-1, excludeFonts=excludeFonts, transforms=None,
+                 multiscale=True):
+        self._digits = Digits(dataset_dir, excludeFonts)
         self.numOfItems = numOfItems
         self.img_size = img_size
 
@@ -94,8 +99,8 @@ class SyntheticNumberDataset(IterableDataset):
 
 
 class Digits:
-    def __init__(self, datasetDir):
-        self._allLabeledDigits = self._load(datasetDir)
+    def __init__(self, datasetDir, exclude):
+        self._allLabeledDigits = self._load(datasetDir, exclude)
 
     def randomNumber(self, numberOfDigits, padding):
         labeledDigits = choices(self._allLabeledDigits, k=numberOfDigits)
@@ -105,14 +110,20 @@ class Digits:
         return numberImage, boxes, labels
 
     @staticmethod
-    def _load(datasetDir):
+    def _load(datasetDir, exclude: dict):
         def readInverted(path):
             im = imreadRGB(path)
             return imInvert(im, im)
 
+        def included(n, imgFile):
+            excludedFonts = exclude.get(-1, []) + exclude.get(n, [])
+            font = os.path.splitext(os.path.basename(imgFile))[0]
+            excluded = font in excludedFonts
+            return not excluded
+
         labeledDigits = []
         for n in range(10):
             numFiles = os.path.join(datasetDir, f'numeric_{n}', '*.png')
-            numImages = [(n, readInverted(f)) for f in glob(numFiles)]
+            numImages = [(n, readInverted(f)) for f in glob(numFiles) if included(n, f)]
             labeledDigits.extend(numImages)
         return labeledDigits

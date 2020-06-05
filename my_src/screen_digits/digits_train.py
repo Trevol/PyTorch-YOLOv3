@@ -49,13 +49,12 @@ class TrainingOptions:
         opt.epochs = 20
         opt.stepsPerEpoch = 1000
         opt.batch_size = 8
-        opt.lr = 1e-5
+        opt.lr = 1e-4
         opt.gradient_accumulations = 2
         opt.model_def = "./data/yolov3.cfg"
         opt.class_names = "./data/classes.names"
-        # opt.pretrained_weights = "./data/weights/yolov3.weights"
-        opt.pretrained_weights = "./data/checkpoints/2/yolov3_ckpt_2_0.532.pth"
-        opt.checkpoints_path = "./data/checkpoints/3"
+        opt.pretrained_weights = "./data/weights/yolov3.weights"
+        opt.checkpoints_path = "./data/checkpoints/1"
         opt.n_cpu = 8
         opt.img_size = 416
         opt.checkpoint_interval = 1
@@ -90,9 +89,8 @@ def train():
     model = opt.makeModel(device)
 
     # Get dataloader
-    dataset = SyntheticNumberDataset(None, opt.digits_dir, img_size=opt.img_size,
-                                     transforms=transforms.make(1),
-                                     multiscale=opt.multiscale_training)
+    dataset = SyntheticNumberDataset(opt.digits_dir, img_size=opt.img_size, numOfItems=None,
+                                     transforms=transforms.make(1), multiscale=opt.multiscale_training)
     dataloader = DataLoader(
         dataset,
         batch_size=opt.batch_size,
@@ -106,9 +104,8 @@ def train():
 
     metrics = ModelMetrics()
 
-    evalDataset = SyntheticNumberDataset(opt.validationSteps, opt.digits_dir, img_size=opt.img_size,
-                                         transforms=transforms.make(1),
-                                         multiscale=False)
+    evalDataset = SyntheticNumberDataset(opt.digits_dir, img_size=opt.img_size, numOfItems=opt.validationSteps,
+                                         transforms=transforms.make(1), multiscale=False)
     evalDataloader = DataLoader(
         evalDataset, batch_size=opt.batch_size, shuffle=False, num_workers=1,
         collate_fn=evalDataset.collate_fn
