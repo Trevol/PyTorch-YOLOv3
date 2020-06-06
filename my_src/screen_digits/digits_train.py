@@ -53,8 +53,9 @@ class TrainingOptions:
         opt.gradient_accumulations = 2
         opt.model_def = "./data/yolov3.cfg"
         opt.class_names = "./data/classes.names"
-        opt.pretrained_weights = "./data/weights/yolov3.weights"
-        opt.checkpoints_path = "./data/checkpoints/1"
+        # opt.pretrained_weights = "./data/weights/yolov3.weights"
+        opt.pretrained_weights = "./data/checkpoints/2/yolov3_ckpt_19_0.981.pth"
+        opt.checkpoints_path = "./data/checkpoints/2"
         opt.n_cpu = 8
         opt.img_size = 416
         opt.checkpoint_interval = 1
