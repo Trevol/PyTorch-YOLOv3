@@ -49,7 +49,7 @@ class TrainingOptions:
         opt.epochs = 20
         opt.stepsPerEpoch = 1000
         opt.batch_size = 8
-        opt.lr = 1e-4
+        opt.lr = 1e-5
         opt.gradient_accumulations = 2
         opt.model_def = "./data/yolov3.cfg"
         opt.class_names = "./data/classes.names"
