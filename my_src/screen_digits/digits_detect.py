@@ -1,6 +1,6 @@
 import cv2
 from trvo_utils import toInt
-from trvo_utils.imutils import imshowWait, imreadRGB, rgb2bgr, imInvert, binarizeSauvola, gray2bgr
+from trvo_utils.imutils import imshowWait, imreadRGB, rgb2bgr, imInvert, binarizeSauvola, gray2bgr, imshow
 from trvo_utils.iter_utils import unzip
 
 from my_src.YoloDetector import YoloDetector
@@ -43,7 +43,7 @@ def boxes_classIds(detections):
 
 class detect:
     def __init__(self):
-        weights_file = './data/checkpoints/gpu_server/yolov3_ckpt_19_0.732.pth'
+        weights_file = './data/checkpoints/gpu_server/yolov3_ckpt_18_0.993.pth'
         self.detector = YoloDetector('./data/yolov3.cfg', 'cuda', 416, weights_file)
 
     def synthetic(self):
@@ -125,20 +125,21 @@ class detect:
 
         elem = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
 
-        screens_dir = './data/screens/musson/*.png'
+        screens_dir = './data/screens/prepocessed_screenshot_06.06.2020.png'
         for f in sorted(glob(screens_dir)):
             img = imreadRGB(f)
             prepocessed = preprocess(img)
 
-            prepocessed = cv2.erode(prepocessed, elem, iterations=1)
+            # prepocessed = cv2.erode(prepocessed, elem, iterations=1)
 
-            detections = self.detector(prepocessed, .8)
+            detections = self.detector(prepocessed, .6)
             detections = spatialSort_detections(detections)
 
             prepocessed = gray2bgr(prepocessed)
 
+            imshow(prepocessed=prepocessed)
             if self._DEBUG_detections(prepocessed, detections) == 27: break
 
 
-# detect().screens_DEBUG()
-detect().synthetic()
+detect().screens_DEBUG()
+# detect().synthetic()
