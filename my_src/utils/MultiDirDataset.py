@@ -94,6 +94,8 @@ class _Loader:
     def __init__(self, dataDirs, labelNames):
         assert len(labelNames)
         self.labelNames = labelNames
+        if isinstance(dataDirs, str):
+            dataDirs = [dataDirs]
         self.dataDirs = dataDirs
 
     @staticmethod

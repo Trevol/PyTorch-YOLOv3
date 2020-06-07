@@ -14,6 +14,7 @@
 2.5) проверить на рисунках из Лешкиного учебника (рисованные для детей птички, животные и т.д.)
 3) train on counters/digits datasets
 !!!! https://github.com/Trevol/yolov3
+https://github.com/Trevol/pytorch-YOLOv4
 OpenCV and YOLO
 - google "pytorch onnx"
 - https://stackoverflow.com/questions/59150350/how-to-change-yolov3-custom-trained-pth-file-to-darknet-format-or-caffemodel
