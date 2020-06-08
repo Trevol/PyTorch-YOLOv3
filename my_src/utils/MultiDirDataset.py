@@ -15,7 +15,7 @@ from trvo_utils.annotation import PascalVocXmlParser, BBox
 from trvo_utils.imutils import imreadRGB, imSize, imshowWait
 from trvo_utils.iter_utils import unzip
 
-from utils.datasets import pad_to_square, resize, to_yolo_input
+from utils.datasets import resize, to_yolo_input
 
 
 class MultiDirDataset(IterableDataset):
@@ -43,33 +43,37 @@ class MultiDirDataset(IterableDataset):
         self.batch_count = 0
 
     def __iter__(self):
+        return self.items_iter(originalValues=False)
+
+    def items_iter(self, originalValues=False):
         if self.infinite:
             for i in cycle(range(len(self.items))):
-                yield self.getitem(i)
+                yield self.getitem(i, originalValues)
         else:
             for i in range(len(self.items)):
-                yield self.getitem(i)
+                yield self.getitem(i, originalValues)
 
     def _transformItem(self, index):
-        _, img, boxes, class_ids = self.items[index]
+        _, img, vocBoxes, class_ids = self.items[index]
 
         if self.transforms:
-            r = self.transforms(image=img, bboxes=boxes, class_ids=class_ids)
+            r = self.transforms(image=img, bboxes=vocBoxes, class_ids=class_ids)
             img = r['image']
-            boxes = r['bboxes']
+            vocBoxes = r['bboxes']
             class_ids = r['class_ids']
-            assert len(boxes) == len(class_ids)
 
         targets = self._emptyTargets
-        if len(boxes):
-            boxes = BBox.voc2yolo_boxes(boxes, imSize(img))
-            targets = np.insert(boxes, 0, class_ids, 1)
+        if len(vocBoxes):
+            yoloBoxes = BBox.voc2yolo_boxes(vocBoxes, imSize(img))
+            targets = np.insert(yoloBoxes, 0, class_ids, 1)
 
-        return img, targets
+        return img, targets, vocBoxes, class_ids
 
-    def getitem(self, index):
-        img, boxes = self._transformItem(index)
-        return to_yolo_input(img, boxes)
+    def getitem(self, index, originalValues=False):
+        img, targets, vocBoxes, class_ids = self._transformItem(index)
+        if originalValues:
+            return img, vocBoxes, class_ids
+        return to_yolo_input(img, targets)
 
     def collate_fn(self, batch):
         imgs, targets = list(zip(*batch))
