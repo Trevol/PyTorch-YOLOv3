@@ -3,11 +3,10 @@ import cv2
 from glob import glob
 from trvo_utils import toInt
 from trvo_utils.annotation import PascalVocXmlParser
-from trvo_utils.imutils import imshowWait, rgb2bgr, imreadRGB
+from trvo_utils.imutils import imshowWait, rgb2bgr, imreadRGB, imSize
 from trvo_utils.timer import timeit
 
 from my_src.SVHN import svhn_transforms
-from my_src.SVHN.svhn_transforms import Invert
 from my_src.utils.MultiDirDataset import MultiDirDataset
 from tqdm import tqdm
 
@@ -27,24 +26,25 @@ def main():
         # if imshowWait(img) == 27: break
 
 
-def main_():
-    inv = Invert(p=.8)
+def main():
+    inv = svhn_transforms.make(p=1)
     allLabels = list(map(str, range(10)))
     with timeit():
         images = []
         annotations = []
-        for f in glob('data/dataset/test/10312.png'):
+        for f in glob('./data/dataset/train/26986.png'):
             img = imreadRGB(f)
             images.append(img)
             annFile = os.path.splitext(f)[0] + '.xml'
             p = PascalVocXmlParser(annFile)
             boxes = p.boxes()
+            print(boxes, imSize(img))
             labels = p.labels()
             class_ids = [allLabels.index(l) for l in labels]
             annotations.append((boxes, labels))
             while True:
-                img = inv(image=img)["image"]
-                imshowWait(rgb2bgr(img))
+                img_t = inv(image=img, bboxes=boxes)["image"]
+                imshowWait(rgb2bgr(img_t))
 
 
 main()
