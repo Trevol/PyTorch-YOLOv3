@@ -54,10 +54,14 @@ class MultiDirDataset(IterableDataset):
                 yield self.getitem(i, originalValues)
 
     def _transformItem(self, index):
-        _, img, vocBoxes, class_ids = self.items[index]
+        imgFile, img, vocBoxes, class_ids = self.items[index]
 
         if self.transforms:
-            r = self.transforms(image=img, bboxes=vocBoxes, class_ids=class_ids)
+            try:
+                r = self.transforms(image=img, bboxes=vocBoxes, class_ids=class_ids)
+            except:
+                print(imgFile)
+                raise
             img = r['image']
             vocBoxes = r['bboxes']
             class_ids = r['class_ids']
@@ -67,12 +71,12 @@ class MultiDirDataset(IterableDataset):
             yoloBoxes = BBox.voc2yolo_boxes(vocBoxes, imSize(img))
             targets = np.insert(yoloBoxes, 0, class_ids, 1)
 
-        return img, targets, vocBoxes, class_ids
+        return imgFile, img, targets, vocBoxes, class_ids
 
     def getitem(self, index, originalValues=False):
-        img, targets, vocBoxes, class_ids = self._transformItem(index)
+        imgFile, img, targets, vocBoxes, class_ids = self._transformItem(index)
         if originalValues:
-            return img, vocBoxes, class_ids
+            return imgFile, img, vocBoxes, class_ids, index
         return to_yolo_input(img, targets)
 
     def collate_fn(self, batch):
