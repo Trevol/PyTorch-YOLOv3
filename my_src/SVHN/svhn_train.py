@@ -6,6 +6,7 @@ from itertools import islice
 from tqdm import tqdm
 
 from models import Darknet
+from my_src.SVHN import svhn_transforms
 from my_src.utils.ModelMetrics import ModelMetrics
 from my_src.utils.MultiDirDataset import MultiDirDataset
 from my_src.utils.ModelEvaluator import ModelEvaluator
@@ -19,8 +20,6 @@ import os
 import torch
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
-
-from my_src.utils import transforms
 
 
 class TrainingOptions:
@@ -47,7 +46,7 @@ class TrainingOptions:
 
         opt.epochs = 20
         opt.stepsPerEpoch = 35000
-        opt.batch_size = 8
+        opt.batch_size = 6
         opt.lr = 1e-4
         opt.gradient_accumulations = 2
         opt.model_def = "./data/yolov3.cfg"
@@ -96,7 +95,7 @@ def train():
 
     # Get dataloader
     dataset = MultiDirDataset(opt.trainDataDirs, img_size=opt.img_size, label_names=class_names,
-                              transforms=transforms.make(),
+                              transforms=svhn_transforms.make(.5),
                               multiscale=opt.multiscale_training)
     dataloader = DataLoader(
         dataset,

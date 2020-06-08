@@ -38,7 +38,8 @@ def main():
     with timeit():
         images = []
         annotations = []
-        for f in glob('./data/dataset/train/26986.png'):
+        # './data/dataset/train/26986.png'
+        for f in glob('./data/dataset/train/28618.png'):
             img = imreadRGB(f)
             images.append(img)
             annFile = os.path.splitext(f)[0] + '.xml'
