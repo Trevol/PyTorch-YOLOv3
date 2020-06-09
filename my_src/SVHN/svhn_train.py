@@ -100,7 +100,7 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # os.makedirs(opt.checkpoints_path, exist_ok=True)
+    os.makedirs(opt.checkpoints_path, exist_ok=True)
     class_names = list(map(str, range(10)))
 
     model = opt.makeModel(device)

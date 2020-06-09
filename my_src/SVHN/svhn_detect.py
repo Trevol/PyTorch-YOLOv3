@@ -57,7 +57,8 @@ def detect_screens():
 def detect_screens_side_by_side():
     model_def_file = 'data/yolov3.cfg'
     weights_files = ['data/checkpoints/gpu_server/1/yolov3_ckpt_1_0.685.pth',
-                     'data/checkpoints/gpu_server/1/yolov3_ckpt_0_0.634.pth']
+                     'data/checkpoints/gpu_server/1/yolov3_ckpt_0_0.634.pth',
+                     'data/checkpoints/gpu_server/1/yolov3_ckpt_2_0.681.pth']
     image_dir = 'data/screens/musson/*.png'
 
     detectors = [
