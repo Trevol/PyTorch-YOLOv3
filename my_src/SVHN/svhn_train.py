@@ -1,5 +1,6 @@
 from __future__ import division
 
+import argparse
 import math
 from itertools import islice
 
@@ -11,22 +12,22 @@ from my_src.utils.ModelMetrics import ModelMetrics
 from my_src.utils.MultiDirDataset import MultiDirDataset
 from my_src.utils.ModelEvaluator import ModelEvaluator
 from utils.utils import *
-from utils.datasets import *
-
-from terminaltables import AsciiTable
 
 import os
 
 import torch
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
+from torch.optim.lr_scheduler import StepLR
 
 
 class TrainingOptions:
-    epochs = 100  # number of epochs
+    stages = 3
+    epochsPerStage = 5  # number of epochs
     stepsPerEpoch = 10000
+    initialLR = .001
+
     batch_size = 8  # size of each image batch
-    lr = 1e-4
     gradient_accumulations = 2  # number of gradient accums before step
     model_def = "config/yolov3.cfg"  # path to model definition file
     pretrained_weights = ""  # if specified starts from checkpoint model
@@ -42,18 +43,29 @@ class TrainingOptions:
 
     @classmethod
     def make(cls):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--batch_size", type=int, default=6, help="size of each image batch")
+        parser.add_argument("--pretrained_weights", type=str, default="./data/weights/yolov3.weights",
+                            help="if specified starts from checkpoint model")
+        parser.add_argument("--checkpoints_path", type=str, default="./data/checkpoints",
+                            help="where to store epoch checkpoints")
+        args = parser.parse_args()
+
         opt = cls()
 
-        opt.epochs = 20
+        opt.stages = 3
+        opt.epochsPerStage = 3  # number of epochs
         opt.stepsPerEpoch = 35000
-        opt.batch_size = 8
-        opt.lr = 1e-4
+        opt.initialLR = .001
+
+        opt.batch_size = args.batch_size
+        opt.pretrained_weights = args.pretrained_weights
+        # opt.pretrained_weights = "./data/checkpoints/yolov3_ckpt_12_1.000.pth"
+        opt.checkpoints_path = args.checkpoints_path
+
         opt.gradient_accumulations = 2
         opt.model_def = "./data/yolov3.cfg"
-        opt.pretrained_weights = "./data/weights/yolov3.weights"
-        # opt.pretrained_weights = "./data/checkpoints/yolov3_ckpt_12_1.000.pth"
 
-        opt.checkpoints_path = "./data/checkpoints"
         opt.n_cpu = 8
         opt.img_size = 416
         opt.checkpoint_interval = 1
@@ -106,7 +118,8 @@ def train():
         collate_fn=dataset.collate_fn
     )
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=opt.initialLR)
+    scheduler = StepLR(optimizer, step_size=opt.epochsPerStage, gamma=0.1)
 
     metrics = ModelMetrics()
 
@@ -118,7 +131,7 @@ def train():
     evaluator = ModelEvaluator(model, evalDataloader, opt.img_size, class_names, opt.batch_size,
                                saveToFile=os.path.join(opt.checkpoints_path, "yolov3_ckpt_{epoch}_eval.txt"))
     nBatches = 0
-    for epoch in range(opt.epochs):
+    for epoch in range(opt.stages * opt.epochsPerStage):
         model.train()
 
         pbar = tqdm.tqdm(islice(dataloader, opt.stepsPerEpoch), total=opt.stepsPerEpoch)
@@ -150,6 +163,8 @@ def train():
         if epoch % opt.checkpoint_interval == 0:
             checkpointPath = os.path.join(opt.checkpoints_path, f"yolov3_ckpt_{epoch}_{meanAP:.3f}.pth")
             torch.save(model.state_dict(), checkpointPath)
+
+        scheduler.step()
 
 
 train()

@@ -12,16 +12,18 @@ from utils.utils import non_max_suppression, rescale_boxes
 class YoloDetector:
     toTensor = transforms.ToTensor()
 
+    @staticmethod
+    def _load(model, weights):
+        if weights.endswith(".weights"):
+            model.load_darknet_weights(weights)
+        else:
+            model.load_state_dict(torch.load(weights))
+
     def __init__(self, model_def_file, device, input_size, weights_file, defaultConfThreshold=.8,
                  defaultNmsThreshold=.5):
         self.device = torch.device(device)
         self.model = Darknet(model_def_file, img_size=input_size).to(self.device)
-
-        if weights_file.endswith(".weights"):
-            self.model.load_darknet_weights(weights_file)
-        else:
-            self.model.load_state_dict(torch.load(weights_file))
-
+        self._load(self.model, weights_file)
         self.model.eval()
 
         self.defaultNmsThreshold = defaultNmsThreshold

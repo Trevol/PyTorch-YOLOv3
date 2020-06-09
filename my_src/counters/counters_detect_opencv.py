@@ -83,16 +83,8 @@ def main():
     # Sets the input to the network
     net.setInput(blob)
 
-    with timeit():
-        outs = net.forward(getOutputsNames(net))
-    with timeit():
-        outs = net.forward(getOutputsNames(net))
-    with timeit():
-        outs = net.forward(getOutputsNames(net))
-    with timeit():
-        outs = net.forward(getOutputsNames(net))
-    with timeit():
-        postprocess(frame, outs, confThreshold, nmsThreshold, frame)
+    outs = net.forward(getOutputsNames(net))
+    postprocess(frame, outs, confThreshold, nmsThreshold, frame)
 
     imshowWait(rgb2bgr(frame))
 

@@ -12,8 +12,8 @@ from my_src.YoloDetector import YoloDetector
 class opt:
     model_def = "./data/yolov3.cfg"
     # weights = "./data/checkpoints/yolov3_ckpt_6_1.000.pth"
-    # weights = "./data/checkpoints/gpu_server/1/yolov3_ckpt_0_1.000.pt"
-    weights = 'test_counter.weights'
+    weights = "./data/checkpoints/gpu_server/1/yolov3_ckpt_0_1.000.pt"
+    # weights = 'test_counter.weights'
     class_path = "./data/classes.names"
     conf_thres = 0.8
     nms_thres = 0.5
@@ -30,14 +30,13 @@ class opt:
 
 
 def detect():
-    device = "cpu"
+    device = "cuda"
     detector = YoloDetector(opt.model_def, device, opt.img_size, opt.weights, opt.conf_thres, opt.nms_thres)
 
     colors = [(0, 0, 200), (200, 0, 0)]
     for img_file in glob_files(opt.image_dirs):
         img = imreadRGB(img_file)
-        with timeit():
-            detections = detector(img)
+        detections = detector(img)
 
         for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
             x1, y1, x2, y2, cls_pred = toInt(x1, y1, x2, y2, cls_pred)
