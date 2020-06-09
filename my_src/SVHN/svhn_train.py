@@ -55,7 +55,7 @@ class TrainingOptions:
 
         opt.stages = 3
         opt.epochsPerStage = 3  # number of epochs
-        opt.stepsPerEpoch = 100
+        opt.stepsPerEpoch = 35000
         opt.initialLR = .001
 
         opt.batch_size = args.batch_size
