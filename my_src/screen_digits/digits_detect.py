@@ -6,6 +6,7 @@ from trvo_utils.iter_utils import unzip
 from my_src.YoloDetector import YoloDetector
 from my_src.screen_digits.SyntheticNumberDataset import SyntheticNumberDataset
 from my_src.utils import transforms
+from utils.sort_left2_right import sort_detections
 
 
 def draw(img, boxes, class_ids):
@@ -16,20 +17,7 @@ def draw(img, boxes, class_ids):
     return img
 
 
-def spatialSort(boxes, class_ids):
-    def box_x1(box_class_id):
-        return box_class_id[0][0]
 
-    ordered = sorted(zip(boxes, class_ids), key=box_x1)
-    ordered_boxes, ordered_class_ids = unzip(ordered, [], [])
-    return ordered_boxes, ordered_class_ids
-
-
-def spatialSort_detections(yoloDetections):
-    def x1(d):
-        return d[0]
-
-    return sorted(yoloDetections, key=x1)
 
 
 def boxes_classIds(detections):
@@ -51,7 +39,7 @@ class detect:
         for i in range(1000):
             numberImage, vocBoxes, class_ids = dataset.getItem(originalValues=True)
             detections = self.detector(numberImage)
-            detections = spatialSort_detections(detections)
+            detections = sort_detections(detections)
             vocBoxes, class_ids = boxes_classIds(detections)
 
             numberImage = rgb2bgr(numberImage, numberImage)
@@ -65,7 +53,7 @@ class detect:
         for i in range(1000):
             numberImage, vocBoxes, class_ids = dataset.getItem(originalValues=True)
             detections = self.detector(numberImage)
-            detections = spatialSort_detections(detections)
+            detections = sort_detections(detections)
 
             numberImage = rgb2bgr(numberImage, numberImage)
             if self._DEBUG_detections(numberImage, detections) == 27: break
@@ -102,7 +90,7 @@ class detect:
             prepocessed = cv2.erode(prepocessed, elem, iterations=1)
 
             detections = self.detector(prepocessed, .8)
-            detections = spatialSort_detections(detections)
+            detections = sort_left2right_detections(detections)
             vocBoxes, class_ids = boxes_classIds(detections)
 
             img = rgb2bgr(img, img)
@@ -133,7 +121,7 @@ class detect:
             # prepocessed = cv2.erode(prepocessed, elem, iterations=1)
 
             detections = self.detector(prepocessed, .6)
-            detections = spatialSort_detections(detections)
+            detections = sort_left2right_detections(detections)
 
             prepocessed = gray2bgr(prepocessed)
 

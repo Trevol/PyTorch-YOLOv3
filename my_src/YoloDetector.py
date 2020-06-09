@@ -16,7 +16,12 @@ class YoloDetector:
                  defaultNmsThreshold=.5):
         self.device = torch.device(device)
         self.model = Darknet(model_def_file, img_size=input_size).to(self.device)
-        self.model.load_state_dict(torch.load(weights_file))
+
+        if weights_file.endswith(".weights"):
+            self.model.load_darknet_weights(weights_file)
+        else:
+            self.model.load_state_dict(torch.load(weights_file))
+
         self.model.eval()
 
         self.defaultNmsThreshold = defaultNmsThreshold
