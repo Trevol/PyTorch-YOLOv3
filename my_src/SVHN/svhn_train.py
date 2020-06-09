@@ -55,7 +55,7 @@ class TrainingOptions:
 
         opt.stages = 3
         opt.epochsPerStage = 3  # number of epochs
-        opt.stepsPerEpoch = 35000
+        opt.stepsPerEpoch = 100
         opt.initialLR = .001
 
         opt.batch_size = args.batch_size
@@ -131,12 +131,14 @@ def train():
     evaluator = ModelEvaluator(model, evalDataloader, opt.img_size, class_names, opt.batch_size,
                                saveToFile=os.path.join(opt.checkpoints_path, "yolov3_ckpt_{epoch}_eval.txt"))
     nBatches = 0
+    print(opt.batch_size, opt.pretrained_weights, opt.checkpoints_path)
     for epoch in range(opt.stages * opt.epochsPerStage):
         model.train()
 
         pbar = tqdm.tqdm(islice(dataloader, opt.stepsPerEpoch), total=opt.stepsPerEpoch)
         pbar.set_description(f"Epoch {epoch}")
-        pbar.set_postfix(loss="--")
+        lr = str(scheduler.get_last_lr()[0])
+        pbar.set_postfix(loss="--", lr=lr)
 
         for imgs, targets in pbar:
             nBatches += 1
@@ -146,7 +148,7 @@ def train():
 
             loss, outputs = model(imgs, targets)
             loss.backward()
-            pbar.set_postfix(loss=loss.item())
+            pbar.set_postfix(loss=loss.item(), lr=lr)
             if nBatches % opt.gradient_accumulations:
                 # Accumulates gradient before each step
                 optimizer.step()
