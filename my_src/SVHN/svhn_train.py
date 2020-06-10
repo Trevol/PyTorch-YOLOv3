@@ -53,10 +53,15 @@ class TrainingOptions:
 
         opt = cls()
 
-        opt.stages = 3
-        opt.epochsPerStage = 3  # number of epochs
+        # opt.stages = 3
+        # opt.epochsPerStage = 3
+        # opt.stepsPerEpoch = 35000
+        # opt.initialLR = .001
+
+        opt.stages = 2
+        opt.epochsPerStage = 3
         opt.stepsPerEpoch = 35000
-        opt.initialLR = .001
+        opt.initialLR = .0001
 
         opt.batch_size = args.batch_size
         opt.pretrained_weights = args.pretrained_weights
