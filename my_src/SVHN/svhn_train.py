@@ -59,9 +59,9 @@ class TrainingOptions:
         # opt.initialLR = .001
 
         opt.stages = 1
-        opt.epochsPerStage = 1
+        opt.epochsPerStage = 5
         opt.stepsPerEpoch = 35000
-        opt.initialLR = .00001
+        opt.initialLR = .0001
 
         opt.batch_size = args.batch_size
         opt.pretrained_weights = args.pretrained_weights
