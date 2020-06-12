@@ -54,7 +54,7 @@ class TrainingOptions:
         opt = cls()
 
         opt.stages = 3
-        opt.epochsPerStage = 4
+        opt.epochsPerStage = 5
         opt.stepsPerEpoch = 35000
         opt.initialLR = .001
 
@@ -71,7 +71,7 @@ class TrainingOptions:
         opt.gradient_accumulations = 2
         opt.model_def = "./data/yolov3.cfg"
 
-        opt.n_cpu = 8
+        opt.n_cpu = 0
         opt.img_size = 416
         opt.checkpoint_interval = 1
         opt.evaluation_interval = 1
