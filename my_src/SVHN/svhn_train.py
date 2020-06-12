@@ -53,15 +53,15 @@ class TrainingOptions:
 
         opt = cls()
 
-        # opt.stages = 3
-        # opt.epochsPerStage = 3
-        # opt.stepsPerEpoch = 35000
-        # opt.initialLR = .001
-
-        opt.stages = 1
-        opt.epochsPerStage = 5
+        opt.stages = 3
+        opt.epochsPerStage = 4
         opt.stepsPerEpoch = 35000
-        opt.initialLR = .0001
+        opt.initialLR = .001
+
+        # opt.stages = 1
+        # opt.epochsPerStage = 5
+        # opt.stepsPerEpoch = 35000
+        # opt.initialLR = .0001
 
         opt.batch_size = args.batch_size
         opt.pretrained_weights = args.pretrained_weights
@@ -112,7 +112,7 @@ def train():
 
     # Get dataloader
     dataset = MultiDirDataset(opt.trainDataDirs, img_size=opt.img_size, label_names=class_names,
-                              transforms=svhn_transforms.make(.5),
+                              transforms=None,  # svhn_transforms.make(.5),
                               multiscale=opt.multiscale_training)
     dataloader = DataLoader(
         dataset,
@@ -140,7 +140,11 @@ def train():
     for epoch in range(opt.stages * opt.epochsPerStage):
         model.train()
 
-        pbar = tqdm.tqdm(islice(dataloader, opt.stepsPerEpoch), total=opt.stepsPerEpoch)
+        if dataset.infinite:
+            pbar = tqdm.tqdm(islice(dataloader, opt.stepsPerEpoch), total=opt.stepsPerEpoch)
+        else:
+            pbar = tqdm.tqdm(dataloader)
+
         pbar.set_description(f"Epoch {epoch}")
         lr = str(scheduler.get_last_lr()[0])
         pbar.set_postfix(loss="--", lr=lr)
