@@ -112,7 +112,7 @@ def train():
 
     # Get dataloader
     dataset = MultiDirDataset(opt.trainDataDirs, img_size=opt.img_size, label_names=class_names,
-                              transforms=None,  # svhn_transforms.make(.5),
+                              transforms=svhn_transforms.make(.5),
                               multiscale=opt.multiscale_training)
     dataloader = DataLoader(
         dataset,
@@ -128,7 +128,7 @@ def train():
 
     metrics = ModelMetrics()
 
-    evalDataset = MultiDirDataset(opt.valDataDirs, opt.img_size, class_names, transforms=svhn_transforms.make(.5), multiscale=False)
+    evalDataset = MultiDirDataset(opt.valDataDirs, opt.img_size, class_names, transforms=None, multiscale=False)
     evalDataloader = DataLoader(
         evalDataset, batch_size=opt.batch_size, shuffle=False, num_workers=1,
         collate_fn=evalDataset.collate_fn
