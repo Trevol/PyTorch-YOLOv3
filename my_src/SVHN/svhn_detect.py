@@ -34,7 +34,7 @@ def detect():
 def detect_screens():
     model_def_file = 'data/yolov3.cfg'
     weights_file = 'data/checkpoints/gpu_server/1/yolov3_ckpt_1_0.685.pth'
-    image_dir = 'data/screens/musson/*.png'
+    image_dir = 'data/screens/4/*.png'
 
     detector = YoloDetector(model_def_file, "cuda", 416, weights_file, .8, .5)
 
@@ -58,8 +58,10 @@ def detect_screens_side_by_side():
     model_def_file = 'data/yolov3.cfg'
     weights_files = ['data/checkpoints/gpu_server/1/yolov3_ckpt_1_0.685.pth',
                      'data/checkpoints/gpu_server/1/yolov3_ckpt_0_0.634.pth',
-                     'data/checkpoints/gpu_server/2/yolov3_ckpt_4_0.670.pth']
-    image_dir = 'data/screens/musson/*.png'
+                     'data/checkpoints/gpu_server/2/yolov3_ckpt_4_0.670.pth',
+                     'data/checkpoints/gpu_server/5_no_augm/yolov3_ckpt_12_0.703.pth',
+                     'data/checkpoints/gpu_server/5_no_augm/yolov3_ckpt_14_0.698.pth']
+    image_dir = 'data/screens/4/*.png'
 
     detectors = [
         [weights_file, YoloDetector(model_def_file, "cuda", 416, weights_file, .8, .5)]

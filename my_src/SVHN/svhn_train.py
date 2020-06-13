@@ -128,7 +128,7 @@ def train():
 
     metrics = ModelMetrics()
 
-    evalDataset = MultiDirDataset(opt.valDataDirs, opt.img_size, class_names, transforms=None, multiscale=False)
+    evalDataset = MultiDirDataset(opt.valDataDirs, opt.img_size, class_names, transforms=svhn_transforms.make(.5), multiscale=False)
     evalDataloader = DataLoader(
         evalDataset, batch_size=opt.batch_size, shuffle=False, num_workers=1,
         collate_fn=evalDataset.collate_fn
